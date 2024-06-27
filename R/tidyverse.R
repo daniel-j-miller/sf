@@ -625,6 +625,83 @@ unnest.sf = function(data, ..., .preserve = NULL) {
 }
 
 #' @name tidyverse
+#' @param col see \link[tidyr]{unnest_wider}
+#' @param names_sep see \link[tidyr]{unnest_wider}
+#' @param simplify see \link[tidyr]{unnest_wider}
+#' @param strict see \link[tidyr]{unnest_wider}
+#' @param names_repair see \link[tidyr]{unnest_wider}
+#' @param ptype see \link[tidyr]{unnest_wider}
+#' @param transform see \link[tidyr]{unnest_wider}
+unnest_wider.sf <- function(data,
+							col,
+							names_sep = NULL,
+							simplify = TRUE,
+							strict = FALSE,
+							names_repair = "check_unique",
+							ptype = NULL,
+							transform = NULL) {
+	if (!requireNamespace("rlang", quietly = TRUE))
+		stop("rlang required: install first?")
+	col = rlang::enquo(col)
+	
+	if (!requireNamespace("tidyr", quietly = TRUE))
+		stop("tidyr required: install first?")
+	
+	class(data) <- setdiff(class(data), "sf")
+	
+	st_as_sf(
+		tidyr::unnest_wider(
+			data,
+			col = !!col,
+			names_sep = names_sep,
+			simplify = simplify,
+			strict = strict,
+			names_repair = names_repair,
+			ptype = ptype,
+			transform = transform
+		),
+		sf_column_name = attr(data, "sf_column")
+	)
+}
+
+#' @name tidyverse
+#' @param .col see \link[tidyr]{hoist}
+#' @param .remove see \link[tidyr]{hoist}
+#' @param .simplify see \link[tidyr]{hoist}
+#' @param .ptype see \link[tidyr]{hoist}
+#' @param .transform see \link[tidyr]{hoist}
+hoist.sf <- function(.data,
+					 .col,
+					 ...,
+					 .remove = TRUE,
+					 .simplify = TRUE,
+					 .ptype = NULL,
+					 .transform = NULL) {
+	if (!requireNamespace("rlang", quietly = TRUE))
+		stop("rlang required: install first?")
+	.col = rlang::enquo(.col)
+	
+	if (!requireNamespace("tidyr", quietly = TRUE))
+		stop("tidyr required: install first?")
+	
+	class(data) <- setdiff(class(data), "sf")
+	
+	st_as_sf(tidyr::hoist(.data,
+						  .col = !!.col,
+						  ...,
+						  .remove = .remove,
+						  .simplify = .simplify,
+						  .ptype = .ptype,
+						  .transform = .transform),
+			 sf_column_name = attr(data, "sf_column"))
+}
+
+
+
+
+
+
+#' @name tidyverse
 drop_na.sf <- function(x, ...) {
 	sf_column_name = attr(x, "sf_column")
 	class(x) <- setdiff(class(x), "sf")
@@ -698,6 +775,8 @@ register_all_s3_methods = function() {
 	s3_register("tidyr::nest", "sf")
 	s3_register("tidyr::separate", "sf")
 	s3_register("tidyr::separate_rows", "sf")
+	s3_register("tidyr::unnest_wider", "sf")
+	s3_register("tidyr::hoist", "sf")
 	s3_register("tidyr::unite", "sf")
 	s3_register("tidyr::unnest", "sf")
 	s3_register("pillar::obj_sum", "sfc")
